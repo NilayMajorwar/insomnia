@@ -26,13 +26,14 @@ type Props = {
   handleGetRenderContext: Function,
   handleImport: Function,
   handleRender: string => Promise<string>,
-  handleSend: () => void,
-  handleSendAndDownload: (filepath?: string) => Promise<void>,
+  handleSend: (?Request) => void,
+  handleSendAndDownload: (filepath?: string, request?: Request) => Promise<void>,
   handleUpdateDownloadPath: Function,
   isVariableUncovered: boolean,
   nunjucksPowerUserMode: boolean,
   onMethodChange: (r: Request, method: string) => Promise<Request>,
   onUrlChange: (r: Request, url: string) => Promise<Request>,
+  onIntervalChange: (r: Request, intervalID: ?IntervalID) => Promise<Request>,
   request: Request,
   uniquenessKey: string,
   hotKeyRegistry: HotKeyRegistry,
@@ -40,7 +41,7 @@ type Props = {
 };
 
 type State = {
-  currentInterval: number | null,
+  currentInterval: IntervalID | null,
   currentTimeout: number | null,
 };
 
@@ -48,7 +49,6 @@ type State = {
 class RequestUrlBar extends React.PureComponent<Props, State> {
   _urlChangeDebounceTimeout: TimeoutID;
   _sendTimeout: TimeoutID;
-  _sendInterval: IntervalID;
   _lastPastedText: string | null;
   _dropdown: ?Dropdown;
   _methodDropdown: ?Dropdown;
@@ -57,7 +57,7 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      currentInterval: null,
+      currentInterval: this.props.request.intervalID,
       currentTimeout: null,
     };
 
@@ -168,7 +168,7 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
     });
   }
 
-  _handleSend() {
+  _handleSend(request?: Request) {
     // Don't stop interval because duh, it needs to keep going!
     // XXX this._handleStopInterval(); XXX
 
@@ -176,9 +176,9 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
 
     const { downloadPath } = this.props;
     if (downloadPath) {
-      this.props.handleSendAndDownload(downloadPath);
+      this.props.handleSendAndDownload(downloadPath, request);
     } else {
-      this.props.handleSend();
+      this.props.handleSend(request);
     }
   }
 
@@ -202,6 +202,7 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
   }
 
   _handleSendOnInterval() {
+    const request = { ...this.props.request };
     showPrompt({
       inputType: 'decimal',
       title: 'Send on Interval',
@@ -210,17 +211,17 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
       submitName: 'Start',
       onComplete: seconds => {
         this._handleStopInterval();
-        this._sendInterval = setInterval(this._handleSend, seconds * 1000);
-        this.setState({ currentInterval: seconds });
+        const intervalID = setInterval(() => this._handleSend(request), seconds * 1000);
+        this.props.onIntervalChange(this.props.request, intervalID);
+        this.setState({ currentInterval: intervalID });
       },
     });
   }
 
   _handleStopInterval() {
-    clearInterval(this._sendInterval);
-    if (this.state.currentInterval) {
-      this.setState({ currentInterval: null });
-    }
+    clearInterval(this.state.currentInterval);
+    this.props.onIntervalChange(this.props.request, null);
+    this.setState({ currentInterval: null });
   }
 
   _handleStopTimeout() {
@@ -232,7 +233,7 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
 
   _handleResetTimeouts() {
     this._handleStopTimeout();
-    this._handleStopInterval();
+    this.setState({ currentInterval: null });
   }
 
   _handleClickSend(e: MouseEvent) {
@@ -251,6 +252,7 @@ class RequestUrlBar extends React.PureComponent<Props, State> {
   componentWillReceiveProps(nextProps: Props) {
     if (nextProps.request._id !== this.props.request._id) {
       this._handleResetTimeouts();
+      this.setState({ currentInterval: nextProps.request.intervalID });
     }
   }
 

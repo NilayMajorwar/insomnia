@@ -109,6 +109,7 @@ type Props = {
   handleSendRequestWithEnvironment: Function,
   handleSendAndDownloadRequestWithEnvironment: Function,
   handleUpdateRequestMimeType: Function,
+  handleUpdateRequestInterval: Function,
   handleUpdateDownloadPath: Function,
 
   // Properties
@@ -220,6 +221,11 @@ class Wrapper extends React.PureComponent<Props, State> {
     }
 
     return rUpdate(r, { url });
+  }
+
+  static _handleUpdateRequestInterval(r: Request, intervalID: ?IntervalID): Promise<Request> {
+    console.log(intervalID);
+    return rUpdate(r, { intervalID });
   }
 
   // Special request updaters
@@ -340,20 +346,23 @@ class Wrapper extends React.PureComponent<Props, State> {
     }
   }
 
-  _handleSendRequestWithActiveEnvironment(): void {
-    const { activeRequest, activeEnvironment, handleSendRequestWithEnvironment } = this.props;
+  _handleSendRequestWithActiveEnvironment(request?: Request): void {
+    const { activeEnvironment, handleSendRequestWithEnvironment } = this.props;
+    const activeRequest = request || this.props.activeRequest;
+    console.log('=== Sending to request: ');
+    console.log(request ? request.url : 'UNDEFINED REQUEST ARG');
     const activeRequestId = activeRequest ? activeRequest._id : 'n/a';
     const activeEnvironmentId = activeEnvironment ? activeEnvironment._id : 'n/a';
     handleSendRequestWithEnvironment(activeRequestId, activeEnvironmentId);
   }
 
-  async _handleSendAndDownloadRequestWithActiveEnvironment(filename?: string): Promise<void> {
-    const {
-      activeRequest,
-      activeEnvironment,
-      handleSendAndDownloadRequestWithEnvironment,
-    } = this.props;
+  async _handleSendAndDownloadRequestWithActiveEnvironment(
+    filename?: string,
+    request?: Request,
+  ): Promise<void> {
+    const { activeEnvironment, handleSendAndDownloadRequestWithEnvironment } = this.props;
 
+    const activeRequest = request || this.props.activeRequest;
     const activeRequestId = activeRequest ? activeRequest._id : 'n/a';
     const activeEnvironmentId = activeEnvironment ? activeEnvironment._id : 'n/a';
     await handleSendAndDownloadRequestWithEnvironment(
@@ -804,6 +813,7 @@ class Wrapper extends React.PureComponent<Props, State> {
             updateRequestAuthentication={Wrapper._handleUpdateRequestAuthentication}
             updateRequestHeaders={Wrapper._handleUpdateRequestHeaders}
             updateRequestMimeType={handleUpdateRequestMimeType}
+            updateRequestInterval={Wrapper._handleUpdateRequestInterval}
             updateSettingsShowPasswords={this._handleUpdateSettingsShowPasswords}
             updateSettingsUseBulkHeaderEditor={this._handleUpdateSettingsUseBulkHeaderEditor}
             forceRefreshCounter={this.state.forceRefreshKey}

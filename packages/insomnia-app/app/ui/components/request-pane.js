@@ -50,6 +50,7 @@ type Props = {
   updateRequestAuthentication: (r: Request, auth: RequestAuthentication) => Promise<Request>,
   updateRequestHeaders: (r: Request, headers: Array<RequestHeader>) => Promise<Request>,
   updateRequestMimeType: (r: Request, mimeType: string) => Promise<Request>,
+  updateRequestInterval: (r: Request, intervalID: ?IntervalID) => Promise<Request>,
   updateSettingsShowPasswords: Function,
   updateSettingsUseBulkHeaderEditor: Function,
   handleImport: Function,
@@ -166,6 +167,7 @@ class RequestPane extends React.PureComponent<Props> {
       updateRequestBody,
       updateRequestHeaders,
       updateRequestMimeType,
+      updateRequestInterval,
       updateSettingsShowPasswords,
       updateRequestMethod,
       updateRequestUrl,
@@ -258,6 +260,7 @@ class RequestPane extends React.PureComponent<Props> {
               uniquenessKey={uniqueKey}
               onMethodChange={updateRequestMethod}
               onUrlChange={updateRequestUrl}
+              onIntervalChange={updateRequestInterval}
               handleAutocompleteUrls={this._autocompleteUrls}
               handleImport={handleImport}
               handleGenerateCode={handleGenerateCode}
