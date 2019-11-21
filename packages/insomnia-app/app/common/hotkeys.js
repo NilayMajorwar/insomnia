@@ -155,6 +155,8 @@ export const hotKeyRefs = {
 
   CLOSE_MODAL: defineHotKey('closeModal', 'Close Modal'),
 
+  CLOSE_CONTEXT_MENU: defineHotKey('closeContextMenu', 'Close Context Menu'),
+
   ENVIRONMENT_UNCOVER_VARIABLES: defineHotKey('environment_uncoverVariables', 'Uncover Variables'),
 };
 
@@ -311,6 +313,11 @@ const defaultRegistry: HotKeyRegistry = {
   ),
 
   [hotKeyRefs.CLOSE_MODAL.id]: keyBinds(
+    keyComb(false, false, false, false, keyboardKeys.esc.keyCode),
+    keyComb(false, false, false, false, keyboardKeys.esc.keyCode),
+  ),
+
+  [hotKeyRefs.CLOSE_CONTEXT_MENU.id]: keyBinds(
     keyComb(false, false, false, false, keyboardKeys.esc.keyCode),
     keyComb(false, false, false, false, keyboardKeys.esc.keyCode),
   ),

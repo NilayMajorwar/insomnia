@@ -66,6 +66,7 @@ import type { RequestMeta } from '../../models/request-meta';
 import type { RequestVersion } from '../../models/request-version';
 import EnvironmentsDropdown from './dropdowns/environments-dropdown';
 import SidebarFilter from './sidebar/sidebar-filter';
+import SidebarContextMenuArea from './context-menus/sidebar-context-menu-area';
 
 type Props = {
   // Helper Functions
@@ -466,6 +467,13 @@ class Wrapper extends React.PureComponent<Props, State> {
           filter={sidebarFilter || ''}
           hotKeyRegistry={settings.hotKeyRegistry}
           activeEnvironment={activeEnvironment}
+        />
+
+        <SidebarContextMenuArea
+          handleCreateRequest={handleCreateRequest}
+          handleCreateRequestGroup={handleCreateRequestGroup}
+          workspace={activeWorkspace}
+          hotKeyRegistry={settings.hotKeyRegistry}
         />
       </React.Fragment>
     );
